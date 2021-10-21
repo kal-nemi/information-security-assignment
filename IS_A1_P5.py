@@ -1,68 +1,124 @@
-# 5. Write a program that can encrypt and Decrypt using a 2 X 2 Hill Cipher.
+key_matrix = [[0]*2 for i in range(2)]		# Stores the key matrix
+
+inverseOfKey =  [[0]*2 for i in range(2)]	# for the inverse of key matrix
+
+def keyMatrix(key):	
+    '''
+    Function taking the text as a parameter and making the key matrix of order 2
+    which will be used for encryption.
+    '''
+    k= 0
+    for i in range(2):
+        for j in range(2):
+            key_matrix[i][j] = ord(key[k]) % 65
+            k+=1
+
+def inverseKey():
+    '''
+    Function for making the inverse of key matrix of order 2
+    which will be used for decryption.
+    '''
+    global inverseOfKey 
+    det = (key_matrix[0][0] * key_matrix[1][1] - key_matrix[0][1] * key_matrix[1][0]) % 26 
+    for i in range(26):
+        if (det * i) % 26 == 1:
+            det = i 
+            break
+    inverseOfKey = [[key_matrix[1][1] * det % 26, -1 * key_matrix[0][1] *det % 26],
+                    [ -1 * key_matrix[1][0] * det % 26, key_matrix[0][0] * det % 26 ]]
 
 
-keyMatrix = [[0] * 3 for i in range(3)]
 
-# Generate vector for the message
-messageVector = [[0] for i in range(3)]
+def Hill_cipher_encryption(plain_Text):
+    '''
+    
+    This function will take the plain text input by user and convert it
+    into the cipher text using the key matrix by hill cipher algorithm technique.
+    
+    '''
+    encrypted_Message = ''
 
-# Generate vector for the cipher
-cipherMatrix = [[0] for i in range(3)]
+    plain_Text = plain_Text.replace(" ","")
+    print(plain_Text)
 
-# Following function generates the
-# key matrix for the key string
-def getKeyMatrix(key):
-	k = 0
-	for i in range(3):
-		for j in range(3):
-			keyMatrix[i][j] = ord(key[k]) % 65
-			k += 1
+    if len(plain_Text) % 2 !=0: 	# this if is to check if plain text is of odd number of character so 
+        plain_Text += "0"		# that we can add extra charecter for making pair 
 
-# Following function encrypts the message
-def encrypt(messageVector):
-	for i in range(3):
-		for j in range(1):
-			cipherMatrix[i][j] = 0
-			for x in range(3):
-				cipherMatrix[i][j] += (keyMatrix[i][x] *
-									messageVector[x][j])
-			cipherMatrix[i][j] = cipherMatrix[i][j] % 26
+    k = 0
+  
 
-def HillCipher(message, key):
+    while k < len(plain_Text):
+        vector = [ord(plain_Text[k]) -ord('A') + 1, ord(plain_Text[k+1]) - ord('A') +1]
+        
+        k+=2
+        vector = [(key_matrix[0][0] *vector[0] + key_matrix[0][1] * vector[1]) %26,
+                  (key_matrix[1][0] * vector[0] + key_matrix[1][1] *vector[1]) %26]
+        
+        cipher_text = [chr(vector[i] + ord('A') -1) for i in range(2)]
+        
+        encrypted_Message += ''.join(cipher_text)
+    
+    return encrypted_Message
 
-	# Get key matrix from the key string
-	getKeyMatrix(key)
+def Hill_cipher_decryption(plain_Text):
+    '''
+    
+    This function will take the plain text input by user and convert it
+    into the cipher text using the key matrix by hill cipher algorithm technique.
+    
+    '''
 
-	# Generate vector for the message
-	for i in range(3):
-		messageVector[i][0] = ord(message[i]) % 65
+    decrypted_Message = ""
+    if len(plain_Text) % 2 != 0:	# this if is to check if plain text is of odd number of character so 
+        plain_Text += "0"		# that we can add extra charecter for making pair
+     
+    k = 0
 
-	# Following function generates
-	# the encrypted vector
-	encrypt(messageVector)
+    print(plain_Text)
+    # decryption
+    while k < len(plain_Text):
+        vector = [ord(plain_Text[k]) - ord('A') + 1, ord(plain_Text[k + 1]) - ord('A') + 1]
+        k += 2
+        vector = [(inverseOfKey[0][0] * vector[0] + inverseOfKey[0][1] * vector[1]) % 26,
+                  (inverseOfKey[1][0] * vector[0] + inverseOfKey[1][1] * vector[1]) % 26]
+        
+        cipher_text = [chr(vector[i] + ord('A') - 1) for i in range(2)]
+        
+        decrypted_Message += ''.join(cipher_text)
 
-	# Generate the encrypted text
-	# from the encrypted vector
-	CipherText = []
-	for i in range(3):
-		CipherText.append(chr(cipherMatrix[i][0] + 65))
+    return decrypted_Message
 
-	# Finally print the ciphertext
-	print("Ciphertext: ", "".join(CipherText))
 
-# Driver Code
 def main():
+    '''
+    This is the main function where the user gets to interact with
+    '''
+    key = 'ABCD'
+    keyMatrix(key)
+    inverseKey()
 
-	# Get the message to
-	# be encrypted
-	message = "ACT"
+    while True:
+        print("----------- Hill Cipher Algorithm For Encryption And Decryption -----------")
+        print("\nEnter 1 for Encrypting your text \nEnter 2 For Decrypting the Cipher Text \n Enter 3 for exiting ")
 
-	# Get the key
-	key = "GYBNQKURP"
+        choice = input("\nEnter you choice:")
 
-	HillCipher(message, key)
+        if choice == '1':
+            plain_Text = input("Enter the Message : ")
+            encrypted_plain_Text = Hill_cipher_encryption(plain_Text.upper())
+            print(f"\n Encrypted Message is : {encrypted_plain_Text}")
 
-if __name__ == "__main__":
-	main()
+        elif choice == '2':
+            plain_Text = input("Enter the Cipher Text Message you have : ")
+            decrypted_plain_Text = Hill_cipher_decryption(plain_Text.upper())
+            print(f"\n Your Decrypted Message is : {decrypted_plain_Text}")
+
+        elif choice == '3':
+            break
+
+        else:
+            print("\n!!! Wrong Choice !!! Please select from the given choices ")
 
 
+if __name__ == '__main__':
+    main()
